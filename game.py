@@ -11,6 +11,8 @@ FPS = 60
 
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (screen_width//2-WIDTH//2, screen_height//2-HEIGHT//2)
 WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Dodger Plane, By: Arjun Sahlot")
+pygame.display.set_icon(pygame.image.load(os.path.join("assets", "icon.png")))
 
 PLAYER_BACKFORTH = True
 
@@ -24,7 +26,6 @@ class Player:
     def __init__(self, x, y, width, height, vel):
         self.x, self.y, self.width, self.height, self.vel = x, y, width, height, vel
         self.image = pygame.transform.scale(pygame.image.load(os.path.join("assets", "player.png")), (width, height))
-        # self._make_transparent()
 
     def move(self):
         keys = pygame.key.get_pressed()
@@ -40,13 +41,6 @@ class Player:
 
     def draw(self, win):
         win.blit(self.image, (self.x, self.y))
-
-    def _make_transparent(self):
-        w, h = self.image.get_size()
-        for x in range(w):
-            for y in range(h):
-                if self.image.get_at((x, y)) == (255, 255, 255):
-                    self.image.set_at((x, y), (0, 0, 0, 0))
 
     def get_mask(self):
         return pygame.mask.from_surface(self.image)
