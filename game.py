@@ -145,7 +145,12 @@ def main(win):
     n = 15
     bullets = create_bullets(n)
     score = 0
-    max_score = 0
+    try:
+        with open("max_score.txt", "r") as f:
+            line = f.readline()
+            max_score = int(line)
+    except FileNotFoundError:
+        max_score = 0
     run = True
     while run:
         clock.tick(FPS)
@@ -157,6 +162,8 @@ def main(win):
             max_score = score
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                with open("max_score.txt", "w") as f:
+                    f.write(str(max_score))
                 run = False
         pygame.display.update()
 
