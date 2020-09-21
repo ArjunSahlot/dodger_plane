@@ -17,6 +17,7 @@ pygame.display.set_icon(pygame.image.load(os.path.join("assets", "icon.png")))
 PLAYER_BACKFORTH = True
 
 FONT = pygame.font.SysFont("comicsans", 50)
+BIG_FONT = pygame.font.SysFont("comicsans", 100)
 
 
 BLACK = (0, 0, 0)
@@ -104,7 +105,7 @@ class Clouds:
         win.blit(self.image, (self.x2, self.y))
 
 
-def draw_window(win, player, clouds, bullets, score, max_score):
+def draw_window(win, player, clouds, bullets, score, max_score, playing):
     clouds.draw(win)
     player.draw(win)
     for bullet in bullets:
@@ -113,6 +114,9 @@ def draw_window(win, player, clouds, bullets, score, max_score):
     text2 = FONT.render(f"Score: {score}", 1, BLACK)
     win.blit(text1, (WIDTH - text1.get_width() - 1, 5))
     win.blit(text2, (WIDTH - text2.get_width() - 5, 5 + text1.get_height() + 5))
+    if not playing:
+        text = BIG_FONT.render("Press SPACEBAR to play", 1, BLACK)
+        win.blit(text, (WIDTH//2 - text.get_width()//2, HEIGHT//2 - text.get_height()//2))
 
 
 def create_bullets(n):
@@ -124,18 +128,28 @@ def create_bullets(n):
 
 
 def move_bullets(player, bullets, score, n):
+    rem = []
     for bullet in bullets:
         movement = bullet.move(player)
         if movement == "out":
-            bullets.remove(bullet)
-            bullets.append(Bullet(random.randint(0, HEIGHT - 40)))
+            rem.append(bullet)
             score += 1
         elif movement == "crash":
             score = 0
             player = Player(random.randint(5, 35), random.randint(0, HEIGHT-50), 100, 50, 7)
             bullets = create_bullets(n)
 
+    for bullet in rem:
+        bullets.remove(bullet)
+        bullets.append(Bullet(random.randint(0, HEIGHT - 40)))
+
     return player, bullets, score
+
+
+def move_objs(player, bullets, score, n, clouds):
+    player.move()
+    clouds.move()
+    return move_bullets(player, bullets, score, n)
 
 
 def main(win):
@@ -152,12 +166,12 @@ def main(win):
     except FileNotFoundError:
         max_score = 0
     run = True
+    playing = False
     while run:
         clock.tick(FPS)
-        draw_window(win, player, clouds, bullets, score, max_score)
-        player.move()
-        clouds.move()
-        player, bullets, score = move_bullets(player, bullets, score, n)
+        draw_window(win, player, clouds, bullets, score, max_score, playing)
+        if playing:
+            player, bullets, score = move_objs(player, bullets, score, n, clouds)
         if max_score < score:
             max_score = score
         for event in pygame.event.get():
@@ -165,7 +179,10 @@ def main(win):
                 with open("max_score.txt", "w") as f:
                     f.write(str(max_score))
                 run = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    playing = True if playing == False else False
         pygame.display.update()
 
-main(WINDOW)
 
+main(WINDOW)
