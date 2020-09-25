@@ -24,24 +24,56 @@ BLACK = (0, 0, 0)
 
 
 class Player:
-    def __init__(self, x, y, width, height, vel):
-        self.x, self.y, self.width, self.height, self.vel = x, y, width, height, vel
+    vel_x = 0
+    vel_y = 0
+    acc = 0.2
+
+    def __init__(self, x, y, width, height):
+        self.x, self.y, self.width, self.height = x, y, width, height
         self.image = pygame.transform.scale(pygame.image.load(os.path.join("assets", "player.png")), (width, height))
 
     def move(self):
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_UP] and self.y > 0:
-            self.y -= self.vel
-        if keys[pygame.K_DOWN] and self.y + self.height < HEIGHT:
-            self.y += self.vel
+        if self.y > 0:
+            if keys[pygame.K_UP]:
+                self.vel_y -= self.acc
+        else:
+            if not keys[pygame.K_DOWN]:
+                self.y = 0
+                self.vel_y = 0
+        if self.y + self.height < HEIGHT:
+            if keys[pygame.K_DOWN]:
+                self.vel_y += self.acc
+        else:
+            if not keys[pygame.K_UP]:
+                self.y = HEIGHT - self.height
+                self.vel_y = 0
         if PLAYER_BACKFORTH:
-            if keys[pygame.K_LEFT] and self.x > 0:
-                self.x -= self.vel
-            if keys[pygame.K_RIGHT] and self.x + self.width < WIDTH:
-                self.x += self.vel
+            if self.x > 0:
+                if keys[pygame.K_LEFT]:
+                    self.vel_x -= self.acc
+            else:
+                if not keys[pygame.K_RIGHT]:
+                    self.x = 0
+                    self.vel_x = 0
+            if self.x + self.width < WIDTH:
+                if keys[pygame.K_RIGHT]:
+                    self.vel_x += self.acc
+            else:
+                if not keys[pygame.K_LEFT]:
+                    self.x = WIDTH - self.width
+                    self.vel_x = 0
+
+        self.vel_x = min(5, self.vel_x)
+        self.vel_y = min(5, self.vel_y)
+        self.vel_x = max(-5, self.vel_x)
+        self.vel_y = max(-5, self.vel_y)
+
+        self.x += self.vel_x
+        self.y += self.vel_y
 
     def draw(self, win):
-        win.blit(self.image, (self.x, self.y))
+        win.blit(self.image, (round(self.x), round(self.y)))
 
     def get_mask(self):
         return pygame.mask.from_surface(self.image)
@@ -52,7 +84,7 @@ class Bullet:
     VEL = 5
 
     def __init__(self, y):
-        self.x, self.y = WIDTH + random.randint(0, 10)*80, y
+        self.x, self.y = WIDTH + random.randint(0, 800), y
         self.image = pygame.transform.scale(pygame.image.load(os.path.join("assets", "bullet.png")), (self.WIDTH, self.HEIGHT))
 
     def move(self, player):
@@ -71,7 +103,7 @@ class Bullet:
     def collide(self, player):
         player_mask = player.get_mask()
         mask = pygame.mask.from_surface(self.image)
-        top_offset = (self.x - player.x, self.y - player.y)
+        top_offset = (round(self.x - player.x), round(self.y - player.y))
         top_point = player_mask.overlap(mask, top_offset)
 
         if top_point:
@@ -121,8 +153,17 @@ def draw_window(win, player, clouds, bullets, score, max_score, playing):
 
 def create_bullets(n):
     bullets = []
-    for _ in range(n):
-        bullets.append(Bullet(random.randint(0, HEIGHT - 40)))
+    for _ in range(round(n)):
+        bullets.append(Bullet(random.randint(0, HEIGHT - 15)))
+
+    return bullets
+
+
+def adjust_bullets(bullets, n):
+    if len(bullets) > round(n):
+        bullets.pop(0)
+    elif len(bullets) < round(n):
+        bullets.append(Bullet(random.randint(0, HEIGHT - 15)))
 
     return bullets
 
@@ -136,14 +177,20 @@ def move_bullets(player, bullets, score, n):
             score += 1
         elif movement == "crash":
             score = 0
-            player = Player(random.randint(5, 35), random.randint(0, HEIGHT-50), 100, 50, 7)
+            player = Player(random.randint(5, 35), random.randint(0, HEIGHT-50), 100, 50)
             bullets = create_bullets(n)
+            n = 5
 
     for bullet in rem:
-        bullets.remove(bullet)
-        bullets.append(Bullet(random.randint(0, HEIGHT - 40)))
+        try:
+            bullets.remove(bullet)
+        except ValueError:
+            pass
 
-    return player, bullets, score
+    while len(bullets) != round(n):
+        bullets = adjust_bullets(bullets, n)
+
+    return player, bullets, score, n
 
 
 def move_objs(player, bullets, score, n, clouds):
@@ -154,9 +201,9 @@ def move_objs(player, bullets, score, n, clouds):
 
 def main(win):
     clock = pygame.time.Clock()
-    player = Player(random.randint(5, 35), random.randint(0, HEIGHT-50), 100, 50, 7)
+    player = Player(random.randint(5, 35), random.randint(0, HEIGHT-50), 100, 50)
     clouds = Clouds()
-    n = 15
+    n = 5
     bullets = create_bullets(n)
     score = 0
     try:
@@ -170,8 +217,10 @@ def main(win):
     while run:
         clock.tick(FPS)
         draw_window(win, player, clouds, bullets, score, max_score, playing)
+        n = min(30, n)
         if playing:
-            player, bullets, score = move_objs(player, bullets, score, n, clouds)
+            n += 0.01
+            player, bullets, score, n = move_objs(player, bullets, score, n, clouds)
         if max_score < score:
             max_score = score
         for event in pygame.event.get():
