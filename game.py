@@ -180,7 +180,6 @@ def move_bullets(player, bullets, score, n):
             player = Player(random.randint(5, 35), random.randint(0, HEIGHT-50), 100, 50)
             bullets = create_bullets(n)
             n = 5
-
     for bullet in rem:
         try:
             bullets.remove(bullet)
