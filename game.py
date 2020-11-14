@@ -11,7 +11,7 @@ FPS = 60
 
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (screen_width//2-WIDTH//2, screen_height//2-HEIGHT//2)
 WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Dodger Plane, By: Arjun Sahlot")
+pygame.display.set_caption("Dodger Plane")
 pygame.display.set_icon(pygame.image.load(os.path.join("assets", "icon.png")))
 
 PLAYER_BACKFORTH = True
