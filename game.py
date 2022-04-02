@@ -28,7 +28,10 @@ screen_height = tk.Tk().winfo_screenheight()
 WIDTH, HEIGHT = 1000, 700
 FPS = 60
 
-os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (screen_width//2-WIDTH//2, screen_height//2-HEIGHT//2)
+os.environ["SDL_VIDEO_WINDOW_POS"] = "%d,%d" % (
+    screen_width // 2 - WIDTH // 2,
+    screen_height // 2 - HEIGHT // 2,
+)
 WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Dodger Plane")
 pygame.display.set_icon(pygame.image.load(os.path.join("assets", "icon.png")))
@@ -49,7 +52,9 @@ class Player:
 
     def __init__(self, x, y, width, height):
         self.x, self.y, self.width, self.height = x, y, width, height
-        self.image = pygame.transform.scale(pygame.image.load(os.path.join("assets", "player.png")), (width, height))
+        self.image = pygame.transform.scale(
+            pygame.image.load(os.path.join("assets", "player.png")), (width, height)
+        )
 
     def move(self):
         keys = pygame.key.get_pressed()
@@ -104,7 +109,10 @@ class Bullet:
 
     def __init__(self, y):
         self.x, self.y = WIDTH + random.randint(0, 800), y
-        self.image = pygame.transform.scale(pygame.image.load(os.path.join("assets", "bullet.png")), (self.WIDTH, self.HEIGHT))
+        self.image = pygame.transform.scale(
+            pygame.image.load(os.path.join("assets", "bullet.png")),
+            (self.WIDTH, self.HEIGHT),
+        )
 
     def move(self, player):
         self.x -= self.VEL
@@ -137,7 +145,9 @@ class Clouds:
     def __init__(self):
         self.y = 0
         self.x1 = 0
-        self.image = pygame.transform.scale(pygame.image.load(os.path.join("assets", "clouds_bg.png")), (WIDTH, HEIGHT))
+        self.image = pygame.transform.scale(
+            pygame.image.load(os.path.join("assets", "clouds_bg.png")), (WIDTH, HEIGHT)
+        )
         self.width = self.image.get_width()
         self.x2 = self.width
 
@@ -167,7 +177,10 @@ def draw_window(win, player, clouds, bullets, score, max_score, playing):
     win.blit(text2, (WIDTH - text2.get_width() - 5, 5 + text1.get_height() + 5))
     if not playing:
         text = BIG_FONT.render("Press SPACEBAR to play", 1, BLACK)
-        win.blit(text, (WIDTH//2 - text.get_width()//2, HEIGHT//2 - text.get_height()//2))
+        win.blit(
+            text,
+            (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - text.get_height() // 2),
+        )
 
 
 def create_bullets(n):
@@ -196,7 +209,9 @@ def move_bullets(player, bullets, score, n):
             score += 1
         elif movement == "crash":
             score = 0
-            player = Player(random.randint(5, 35), random.randint(0, HEIGHT-50), 100, 50)
+            player = Player(
+                random.randint(5, 35), random.randint(0, HEIGHT - 50), 100, 50
+            )
             bullets = create_bullets(n)
             n = 5
     for bullet in rem:
@@ -219,7 +234,7 @@ def move_objs(player, bullets, score, n, clouds):
 
 def main(win):
     clock = pygame.time.Clock()
-    player = Player(random.randint(5, 35), random.randint(0, HEIGHT-50), 100, 50)
+    player = Player(random.randint(5, 35), random.randint(0, HEIGHT - 50), 100, 50)
     clouds = Clouds()
     n = 5
     bullets = create_bullets(n)
